@@ -1,0 +1,23 @@
+{
+  "name": "statusled",
+  "version": "1.0.0",
+  "keywords": "led status blink flash count",
+  "description": "Easy way to drive a status led on a project. Led off/on, blinking, flashing, counting...",
+  "authors": {
+    "name": "Alexandre Maurer",
+    "url": "https://github.com/alexmaurer-madis",
+    "maintainer": true
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/alexmaurer-madis/statusled"
+  },
+  "homepage": "https://github.com/alexmaurer-madis/statusled",
+  "export": {
+    "exclude": []
+  },
+  "license": "MIT",
+  "frameworks": "*",
+  "platforms": "*",
+  "headers": ["statusled.h"]
+}

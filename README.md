@@ -16,12 +16,12 @@ You can set the pattern of your led on the fly within your code by calling the f
 
 | Description           | Function                                                               |
 | :-------------------- | :--------------------------------------------------------------------- |
-| Led still (off or on) | ledSetStill(uint8_t)                                                   |
-| Led blinking          | ledSetBlink(double period, double dutyCycle)                           |
-| Led counting          | ledSetCount(uint32_t count, double onTime, double delay, double sleep) |
+| LED still (off or on) | ledSetStill(uint8_t)                                                   |
+| LED blinking          | ledSetBlink(double period, double dutyCycle)                           |
+| LED counting          | ledSetCount(uint32_t count, double onTime, double delay, double sleep) |
 | LED flashing one time | ledSetFlash(double onTime)                                             |
 
-## Library usage with millis() and loop() (the prefered way) :
+## Library usage with millis() and loop() (the preferred way) :
 
 ```
 StatusLed sl = StatusLed();

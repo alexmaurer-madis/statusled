@@ -29,6 +29,7 @@ StatusLed::StatusLed(uint32_t callsPerSecond) {
  */
 uint8_t StatusLed::process(unsigned long current_millis) {
   _ticks+= (unsigned long)(current_millis - _last_millis);
+  _last_millis=current_millis;
   return ledProcess();
 }
 

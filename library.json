@@ -1,6 +1,6 @@
 {
   "name": "statusled",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "keywords": "led status blink flash count",
   "description": "Easy way to drive a status led on a project. Led off/on, blinking, flashing, counting...",
   "authors": {

@@ -1,9 +1,9 @@
-# Drive a status led on a PCB
+# Drive a status LED on your project
 
-Every project generaly include one or more status led.  
-This library help you to easily display a state for your user.
+Every project generally includes one or more status LED.  
+This library helps you to easily display the state of your device.
 
-Like "Counting" for example in a thermostat is very handy to display a state like :
+Function "Counting" for example in a thermostat is very handy to indicate the current state like :
 
 - 1 time, stand-by
 - 2 times, heating
@@ -14,7 +14,7 @@ Like "Counting" for example in a thermostat is very handy to display a state lik
 
 You can set the pattern of your led on the fly within your code by calling the following functions :
 
-| Function description  | method                                                                 |
+| Description           | Function                                                               |
 | :-------------------- | :--------------------------------------------------------------------- |
 | Led still (off or on) | ledSetStill(uint8_t)                                                   |
 | Led blinking          | ledSetBlink(double period, double dutyCycle)                           |

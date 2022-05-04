@@ -1,3 +1,15 @@
+/**
+ * @file statusled.cpp
+ * 
+ * Library to drive a status LED like off/on, blinking, counting, flashing...
+ * Every project generally includes one or more status LED.  
+ * This library helps you to easily display the state of your device
+ *
+ * @author Alexandre Maurer (alexmaurer@madis.ch)
+ * @license MIT
+ * 
+ */
+
 #include "statusled.h"
 
 #include <stdint.h>
@@ -217,7 +229,7 @@ void StatusLed::_ledFunctionBlink()
 }
 
 void StatusLed::_ledFunctionCount() {
-  //Pause ?
+  //Pause before counting again
   if(_countParam.currentCount == 0)
   {
     if(_ticks >= _countParam.countPauseTicks)
@@ -241,12 +253,16 @@ void StatusLed::_ledFunctionCount() {
   state  = (_ticks < _countParam.countOnTicks) ? 1 : 0;
 }
 
+
 void StatusLed::_ledFunctionFlash() {
   state = (_ticks >= _flashParam.onTicks) ? 0 : 1;
 }
 
-/*
- * Convert time to Ticks
+/**
+ * @brief * Convert time sec to Ticks
+ * 
+ * @param time in second
+ * @return uint32_t corresponding number of ticks
  */
 uint32_t StatusLed::timeToTicks(double time) {
   return (uint32_t)(time * (double)_callsPerSecond);

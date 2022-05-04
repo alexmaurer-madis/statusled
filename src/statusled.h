@@ -1,3 +1,15 @@
+/**
+ * @file statusled.h
+ * 
+ * Library to drive a status LED like off/on, blinking, counting, flashing...
+ * Every project generally includes one or more status LED.  
+ * This library helps you to easily display the state of your device
+ *
+ * @author Alexandre Maurer (alexmaurer@madis.ch)
+ * @license MIT
+ * 
+ */
+
 #ifndef __LED_H
 #define __LED_H
 

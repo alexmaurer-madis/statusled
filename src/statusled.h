@@ -14,6 +14,7 @@ class StatusLed {
     StatusLed(void);
     StatusLed(uint32_t callsPerSecond);
     
+    uint8_t process(void);
     uint8_t process(unsigned long millis);
 
     void ledSetStill(uint8_t state);
@@ -22,7 +23,6 @@ class StatusLed {
     void ledSetFlash(double onTime);
     
     void tick(void);
-    uint8_t ledProcess();
     uint32_t timeToTicks(double time);
 
     uint8_t state;
@@ -52,6 +52,7 @@ class StatusLed {
     volatile uint32_t _ticks;
     unsigned long _last_millis;
 
+    uint8_t _ledProcess();
     uint32_t _callsPerSecond;
     uint8_t _oldState;
     uint8_t _function;

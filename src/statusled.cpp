@@ -22,7 +22,7 @@ StatusLed::StatusLed(uint32_t callsPerSecond) {
 }
 
 /**
- * @brief Function to be called within your loop()
+ * @brief Function to be called within your loop() when using millis()
  * 
  * @param current_millis the current value of function millis()
  * @return uint8_t return true if the state of led must be changed
@@ -30,8 +30,18 @@ StatusLed::StatusLed(uint32_t callsPerSecond) {
 uint8_t StatusLed::process(unsigned long current_millis) {
   _ticks+= (unsigned long)(current_millis - _last_millis);
   _last_millis=current_millis;
-  return ledProcess();
+  return _ledProcess();
 }
+
+/**
+ * @brief Function to be called within your loop() when using timer and tick()
+ * 
+ * @return uint8_t 
+ */
+uint8_t StatusLed::process() {
+  return _ledProcess();
+}
+
 
 /**
  * @brief Function to be called by a timer at regular interval
@@ -160,7 +170,7 @@ void StatusLed::ledSetFlash(double onTime) {
   _function = STATUSLED_FLASH;
 }
 
-uint8_t StatusLed::ledProcess() {
+uint8_t StatusLed::_ledProcess() {
   _oldState = state;
 
   switch(_function)

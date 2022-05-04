@@ -1,8 +1,8 @@
 {
   "name": "statusled",
   "version": "1.0.1",
-  "keywords": "led status blink flash count",
-  "description": "Easy way to drive a status led on a project. Led off/on, blinking, flashing, counting...",
+  "keywords": "led status blinking counting flashing",
+  "description": "Library to drive a status led  like off/on, blinking, counting, flashing... Every project generaly include one or more status led. This library help you to easily display a state for your user.",
   "authors": {
     "name": "Alexandre Maurer",
     "url": "https://github.com/alexmaurer-madis",
@@ -17,7 +17,7 @@
     "exclude": []
   },
   "license": "MIT",
-  "frameworks": "*",
+  "frameworks": "arduino",
   "platforms": "*",
   "headers": ["statusled.h"]
 }

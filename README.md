@@ -43,7 +43,7 @@ StatusLed sl = StatusLed();
 void setup() {
   pinMode(LED_BUILTIN, OUTPUT);
 
-  //Continuously blink the LED. Blink period is 2s and a duty cycle 50% (1s on, 1s off).
+  //Continuously blink the LED. Blink period is 2s and duty cycle 50% (1s on, 1s off).
   sl.ledSetBlink(2, 50);
 }
 
@@ -54,7 +54,7 @@ void loop() {
   //Calling process will return true if the state of the LED has changed.
   if(sl.process(current_millis)) {
 
-    //Update output (use !sl.state if your LED is open collector driven)
+    //Update output (use !sl.state if you must invert the output)
     digitalWrite(LED_BUILTIN, sl.state);
   }
 }
@@ -77,7 +77,7 @@ void timerRoutine(void) {
 void setup() {
   pinMode(LED_BUILTIN, OUTPUT);
 
-  //Continuously blink the LED. Blink period is 2s and a duty cycle 50% (1s on, 1s off).
+  //Continuously blink the LED. Blink period is 2s and duty cycle 50% (1s on, 1s off).
   sl.ledSetBlink(2, 50);
 }
 
@@ -86,7 +86,7 @@ void loop() {
   //Calling process will return true if the state of the LED has changed.
   if(sl.process()) {
 
-    //Update output (use !sl.state if your LED is open collector driven)
+    //Update output (use !sl.state if you must invert the output)
     digitalWrite(LED_BUILTIN, sl.state);
   }
 }

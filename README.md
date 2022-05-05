@@ -1,6 +1,6 @@
-# Drive one or more status LED on your project
+# Drive one or more status LED on your Arduino project
 
-Every project generally includes one or more status LED.  
+Every Arduino project generally includes one or more status LED.  
 This library helps you to easily display the current state of your device.
 
 ## Example with the LED pattern "Counting"

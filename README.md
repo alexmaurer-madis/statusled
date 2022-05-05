@@ -1,18 +1,22 @@
-# Drive a status LED on your project
+# Drive one or more status LED on your project
 
 Every project generally includes one or more status LED.  
-This library helps you to easily display the state of your device.
+This library helps you to easily display the current state of your device.
 
-Function "Counting" for example in a thermostat is very handy to indicate the current state like :
+## Example with the LED pattern "Counting"
 
-- 1 time, stand-by
-- 2 times, heating
-- 3 times, cooling
-- 4 times, temperature sensor failure
+Only one LED on a small thermostat can be used to indicate :
 
-## LED blinking pattern
+| LED flashing count | State description          |
+| :----------------: | :------------------------- |
+|         1x         | stand-by                   |
+|         2x         | heating                    |
+|         3x         | cooling                    |
+|         4x         | temperature sensor failure |
 
-You can set the pattern of your led on the fly within your code by calling the following functions :
+## Easily set the LED blinking pattern
+
+You can set the pattern of your LED on the fly within your code by calling the following functions :
 
 | Description           | Function                                                               |
 | :-------------------- | :--------------------------------------------------------------------- |
@@ -21,61 +25,73 @@ You can set the pattern of your led on the fly within your code by calling the f
 | LED counting          | ledSetCount(uint32_t count, double onTime, double delay, double sleep) |
 | LED flashing one time | ledSetFlash(double onTime)                                             |
 
+**Example**
+
+```
+//Blink 4 times and wait 3s before blinking again
+//Blinking pattern is 0.2s ON and 0.4s OFF
+sl.ledSetCount(4, 0.2, 0.4, 3);
+```
+
 ## Library usage with millis() and loop() (the preferred way) :
 
 ```
+#include <statusled.h>
+
 StatusLed sl = StatusLed();
 
 void setup() {
-    pinMode(LED_BUILTIN, OUTPUT);
+  pinMode(LED_BUILTIN, OUTPUT);
 
-    //Blink a led for a period of 2s and a duty cycle of 50%
-    sl.ledSetBlink(2, 50);
-
-    //Blink 4 times and wait 3s before blinking again
-    //sl.ledSetCount(4, 0.2, 0.4, 3);
+  //Continuously blink the LED. Blink period is 2s and a duty cycle 50% (1s on, 1s off).
+  sl.ledSetBlink(2, 50);
 }
 
 void loop() {
+  //Saving millis result here to remove multiple call overhead (if you have multiple LED to update)
   unsigned long current_millis=millis();
 
-  //calling process return true if the state of the led must be changed.
+  //Calling process will return true if the state of the LED has changed.
   if(sl.process(current_millis)) {
+
+    //Update output (use !sl.state if your LED is open collector driven)
     digitalWrite(LED_BUILTIN, sl.state);
   }
 }
 ```
 
-## Library usage with a timer (for ex. 1ms) and loop()
+## Library usage with a timer (for ex. interruption every 1ms) and loop()
 
 ```
+#include <statusled.h>
+
 //1ms timer = 1000 ticks per second
 StatusLed sl = StatusLed(1000);
 
-//The initialisation of your timer and callback routine is specific to your platform
+//The initialization of your timer and the ISR routine is specific to your board.
+//Following function is only for usage demonstration
 void timerRoutine(void) {
-    sl.tick();
+  sl.tick();
 }
 
 void setup() {
-    pinMode(LED_BUILTIN, OUTPUT);
+  pinMode(LED_BUILTIN, OUTPUT);
 
-    //Blink a led for a period of 2s and a duty cycle of 50%
-    sl.ledSetBlink(2, 50);
-
-    //Blink 4 times and wait 3s before blinking again
-    //sl.ledSetCount(4, 0.2, 0.4, 3);
+  //Continuously blink the LED. Blink period is 2s and a duty cycle 50% (1s on, 1s off).
+  sl.ledSetBlink(2, 50);
 }
 
 void loop() {
 
-  //calling process return true if the state of the led must be changed.
+  //Calling process will return true if the state of the LED has changed.
   if(sl.process()) {
+
+    //Update output (use !sl.state if your LED is open collector driven)
     digitalWrite(LED_BUILTIN, sl.state);
   }
 }
 ```
 
-## Todo list, library enhancement
+## Todo list for maintainer, library enhancement
 
-- [ ] Reduce \_blinkParam, \_countParam, \_flashParam to a smaller footprint
+- [ ] Reduce \_blinkParam, \_countParam, \_flashParam for a smaller footprint

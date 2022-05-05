@@ -10,8 +10,8 @@
  * 
  */
 
-#ifndef __LED_H
-#define __LED_H
+#ifndef __STATUSLED_H
+#define __STATUSLED_H
 
 #include <stdint.h>
 

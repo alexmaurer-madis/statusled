@@ -1,31 +1,34 @@
-# Drive one or more status LED on your Arduino project
+# Easy drive a status LED on your Arduino project
 
-Every Arduino project generally includes one or more status LED.  
+Every microcontroller project generally includes one or more status LED.  
 This library helps you to easily display the current state of your device.
 
+* LED still for on/off states.
+* LED flashing is more suitable for communication or storage information (TX/RX, READ/WRITE).
+* LED blinking and counting to displaying more precise state.
+
+
+## Easily set the LED blinking pattern
+You can set the pattern of your LED on the fly within your code by calling the following functions :
+
+| Description           | Function                                                                |
+| :-------------------- | :---------------------------------------------------------------------- |
+| LED still (off or on) | `ledSetStill(uint8_t)`                                                  |
+| LED blinking          | `ledSetBlink(double period, double dutyCycle)`                          |
+| LED counting          | `ledSetCount(uint8_t count, double onTime, double delay, double sleep)` |
+| LED flashing one time | `ledSetFlash(double onTime)`                                            |
+
+
 ## Example with the LED pattern "Counting"
+With counting pattern and only one LED on your project allows you to display multiple states.
 
-Only one LED on a small thermostat can be used to indicate :
-
-| LED flashing count | State description          |
+| LED flashing count | Example of state           |
 | :----------------: | :------------------------- |
 |         1x         | stand-by                   |
 |         2x         | heating                    |
 |         3x         | cooling                    |
 |         4x         | temperature sensor failure |
 
-## Easily set the LED blinking pattern
-
-You can set the pattern of your LED on the fly within your code by calling the following functions :
-
-| Description           | Function                                                               |
-| :-------------------- | :--------------------------------------------------------------------- |
-| LED still (off or on) | ledSetStill(uint8_t)                                                   |
-| LED blinking          | ledSetBlink(double period, double dutyCycle)                           |
-| LED counting          | ledSetCount(uint32_t count, double onTime, double delay, double sleep) |
-| LED flashing one time | ledSetFlash(double onTime)                                             |
-
-**Example**
 
 ```
 //Blink 4 times and wait 3s before blinking again
@@ -94,4 +97,6 @@ void loop() {
 
 ## Todo list for maintainer, library enhancement
 
-- [ ] Reduce \_blinkParam, \_countParam, \_flashParam for a smaller footprint
+- [ ] Add the possibility to set callback functions.
+- [ ] Add the possibility under Arduino Framework to automatically drive the corresponding GPIO.
+- [X] Reduce \_blinkParam, \_countParam, \_flashParam for a smaller footprint.

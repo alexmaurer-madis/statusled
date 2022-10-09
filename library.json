@@ -1,6 +1,6 @@
 {
   "name": "statusled",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "keywords": "LED status blinking counting flashing",
   "description": "Library to drive a status LED like off/on, blinking, counting, flashing... Every project generally includes one or more status LED. This library helps you to easily display the state of your device",
   "authors": {

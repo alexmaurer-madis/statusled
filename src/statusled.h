@@ -15,12 +15,6 @@
 
 #include <cstdint>
 
-#define STATUSLED_STOP 0x01
-#define STATUSLED_STILL 0x02
-#define STATUSLED_BLINK 0x03
-#define STATUSLED_COUNT 0x04
-#define STATUSLED_FLASH 0x05
-
 class StatusLed {
 public:
   StatusLed(void);

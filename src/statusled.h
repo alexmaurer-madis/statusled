@@ -22,45 +22,45 @@
 #define STATUSLED_FLASH 0x05
 
 class StatusLed {
- public:
+public:
   StatusLed(void);
-  StatusLed(uint32_t callsPerSecond);
+  StatusLed(uint32_t calls_per_second);
 
   uint8_t process(void);
   uint8_t process(unsigned long millis);
 
   void ledSetStill(uint8_t state);
-  void ledSetBlink(double period, double dutyCycle);
-  void ledSetCount(uint8_t count, double onTime, double delay, double pause);
-  void ledSetFlash(double onTime);
+  void ledSetBlink(double period, double duty_cycle);
+  void ledSetCount(uint8_t count, double on_time, double delay, double pause);
+  void ledSetFlash(double on_time);
 
   void tick(void);
 
   uint8_t state;
 
- private:
-  uint32_t _secToTicks(double time);
+private:
+  uint32_t secToTicks(double time);
 
-  volatile uint32_t _ticks;
-  unsigned long _last_millis;
+  volatile uint32_t ticks_;
+  unsigned long last_millis_;
 
-  uint8_t _ledProcess();
-  uint32_t _callsPerSecond;
-  uint8_t _oldState;
-  uint8_t _stillState;
+  uint8_t ledProcess();
+  uint32_t calls_per_second_;
+  uint8_t old_state_;
+  uint8_t still_state_;
 
-  uint32_t _onTicks;
-  uint32_t _offTicks;
-  uint32_t _pauseTicks;
-  uint8_t _totalCount;
-  uint8_t _currentCount;
+  uint32_t on_ticks_;
+  uint32_t off_ticks_;
+  uint32_t pause_ticks_;
+  uint8_t total_count_;
+  uint8_t current_count_;
 
-  void (StatusLed::*_functionPtr)(void);
-  void _ledFunctionStop();
-  void _ledFunctionStill();
-  void _ledFunctionBlink();
-  void _ledFunctionCount();
-  void _ledFunctionFlash();
+  void (StatusLed::*function_ptr_)(void);
+  void ledFunctionStop();
+  void ledFunctionStill();
+  void ledFunctionBlink();
+  void ledFunctionCount();
+  void ledFunctionFlash();
 };
 
 #endif

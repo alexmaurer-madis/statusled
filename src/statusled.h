@@ -34,11 +34,12 @@ public:
 
 private:
   uint32_t secToTicks(double time);
+  uint8_t ledProcess();
 
   volatile uint32_t ticks_;
   unsigned long last_millis_;
+  bool function_changed_;
 
-  uint8_t ledProcess();
   uint32_t calls_per_second_;
   uint8_t old_state_;
   uint8_t still_state_;

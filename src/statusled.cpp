@@ -21,6 +21,7 @@
 StatusLed::StatusLed(void) {
   calls_per_second_ = 1000;
   function_ptr_ = &StatusLed::ledFunctionStop;
+  function_changed_ = true;
 }
 
 /**
@@ -33,6 +34,7 @@ StatusLed::StatusLed(void) {
 StatusLed::StatusLed(uint32_t calls_per_second) {
   calls_per_second_ = calls_per_second;
   function_ptr_ = &StatusLed::ledFunctionStop;
+  function_changed_ = true;
 }
 
 /**
@@ -43,6 +45,11 @@ StatusLed::StatusLed(uint32_t calls_per_second) {
  * @return uint8_t return true if the state of the led must be changed
  */
 uint8_t StatusLed::process(const unsigned long current_millis) {
+  if (function_changed_) {
+    function_changed_ = false;
+    last_millis_ = current_millis;
+  }
+
   ticks_ += (unsigned long)(current_millis - last_millis_);
   last_millis_ = current_millis;
   return ledProcess();
@@ -70,6 +77,7 @@ void StatusLed::ledSetStill(const uint8_t state) {
   function_ptr_ = nullptr;
   still_state_ = state;
   function_ptr_ = &StatusLed::ledFunctionStill;
+  function_changed_ = true;
 }
 
 /**
@@ -107,6 +115,7 @@ void StatusLed::ledSetBlink(double period, double duty_cycle) {
   ticks_ = 0;
   state = 0;
   function_ptr_ = &StatusLed::ledFunctionBlink;
+  function_changed_ = true;
 }
 
 /**
@@ -163,6 +172,7 @@ void StatusLed::ledSetCount(uint8_t count, double on_time, double delay,
   ticks_ = 0;
   state = 0;
   function_ptr_ = &StatusLed::ledFunctionCount;
+  function_changed_ = true;
 }
 
 /**
@@ -182,6 +192,7 @@ void StatusLed::ledSetFlash(double on_time) {
   ticks_ = 0;
   state = 0;
   function_ptr_ = &StatusLed::ledFunctionFlash;
+  function_changed_ = true;
 }
 
 uint8_t StatusLed::ledProcess() {

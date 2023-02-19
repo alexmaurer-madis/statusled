@@ -13,7 +13,11 @@
 #ifndef __STATUSLED_H
 #define __STATUSLED_H
 
+#include "Arduino.h"
+
 #include <cstdint>
+#include <map>
+#include <string>
 
 class StatusLed {
 public:
@@ -22,15 +26,20 @@ public:
 
   uint8_t process(void);
   uint8_t process(unsigned long millis);
+  void tick(void);
 
   void ledSetStill(uint8_t state);
   void ledSetBlink(double period, double duty_cycle);
   void ledSetCount(uint8_t count, double on_time, double delay, double pause);
   void ledSetFlash(double on_time);
 
-  void tick(void);
+  void setPin(uint8_t pin, bool invert = false);
+  uint8_t getState(void);
 
   uint8_t state;
+
+  uint8_t pin_;
+  bool invert_;
 
 private:
   uint32_t secToTicks(double time);
@@ -56,6 +65,22 @@ private:
   void ledFunctionBlink();
   void ledFunctionCount();
   void ledFunctionFlash();
+};
+
+class StatusLedManager {
+public:
+  StatusLedManager(void);
+  StatusLedManager(uint32_t calls_per_second);
+  void createStatusLed(const char *name, uint8_t pin, bool invert = false);
+
+  StatusLed &operator()(const char *name);
+
+  void process(unsigned long millis);
+  void tick(void);
+
+private:
+  uint32_t calls_per_second_;
+  std::map<const char *, StatusLed> leds_;
 };
 
 #endif

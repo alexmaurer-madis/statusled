@@ -26,7 +26,7 @@ StatusLed::StatusLed(void) {
 
 /**
  * @brief Construct a new StatusLed to be used with a timer calling tick() at
- * regular interval
+ * fixed interval
  *
  * @param calls_per_second specify the number of time per second tick() will be
  * called
@@ -63,7 +63,7 @@ uint8_t StatusLed::process(const unsigned long current_millis) {
 uint8_t StatusLed::process() { return ledProcess(); }
 
 /**
- * @brief Function to be called by a timer at regular interval
+ * @brief Function to be called by a timer at fixed interval
  *
  */
 void StatusLed::tick(void) { ticks_++; }
@@ -253,4 +253,92 @@ void StatusLed::ledFunctionFlash() { state = (ticks_ >= on_ticks_) ? 0 : 1; }
  */
 uint32_t StatusLed::secToTicks(double time) {
   return (uint32_t)(time * (double)calls_per_second_);
+}
+
+void StatusLed::setPin(uint8_t pin, bool invert) {
+  pin_ = pin;
+  invert_ = invert;
+}
+
+uint8_t StatusLed::getState(void) {
+  if (invert_)
+    return !state;
+  else
+    return state;
+}
+
+/**
+ * @brief Construct a new StatusLedManager for use by calling process() within
+ * loop() and using millis() as the time base (preferred way for Arduino)
+ *
+ */
+StatusLedManager::StatusLedManager(void) { calls_per_second_ = 0; }
+
+/**
+ * @brief Construct a new StatusLedManager to be used with a timer calling
+ * tick() at precise interval
+ *
+ * @param calls_per_second specify the number of time per second tick() will be
+ * called
+ */
+StatusLedManager::StatusLedManager(const uint32_t calls_per_second) {
+  calls_per_second_ = calls_per_second;
+}
+
+/**
+ * @brief Create a new StatusLed that will be driven by the StatusLedManager.
+ *
+ * @param name Custom name for your led (for ex. system, ready, run, error...)
+ * @param pin pin number of your led
+ * @param invert Optional, True to
+ */
+void StatusLedManager::createStatusLed(const char *name, uint8_t pin,
+                                       const bool invert) {
+  StatusLed *sl;
+  if (calls_per_second_ == 0)
+    sl = new StatusLed();
+  else
+    sl = new StatusLed(calls_per_second_);
+
+  sl->pin_ = pin;
+  sl->invert_ = invert;
+  leds_.insert(std::pair<const char *, StatusLed>(name, *sl));
+}
+
+/**
+ * @brief Function to be called within your loop() when using millis() as the
+ * timebase.
+ *
+ * @param millis the value that the function millis() returned
+ */
+void StatusLedManager::process(const unsigned long millis) {
+  for (auto &[key, value] : leds_) {
+    if (value.process(millis)) {
+#ifdef Arduino_h
+      digitalWrite(value.pin_, value.getState());
+#endif
+    }
+  }
+}
+
+/**
+ * @brief Function to be called by a timer at fixed interval
+ *
+ */
+void StatusLedManager::tick(void) {
+  // tick every leds
+  for (auto &[key, value] : leds_) {
+    value.tick();
+  }
+}
+
+/**
+ * @brief Return the StatusLed object corresponding to the custom name
+ *
+ * @param name The custom name of your StatusLed
+ * @return StatusLed&
+ */
+StatusLed &StatusLedManager::operator()(const char *name) {
+  // No try catch if key name does not exist
+  return leds_.at(name);
 }

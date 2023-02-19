@@ -4,12 +4,17 @@ Every microcontroller project generally includes one or more status LED.
 This library helps you to easily display the current state of your device.
 
 * LED still for on/off states.
-* LED flashing is more suitable for communication or storage information (TX/RX, READ/WRITE).
-* LED blinking and counting to displaying more precise state.
+* LED flashing for communication or storage information (TX/RX, READ/WRITE).
+* LED blinking and counting to display precise state.
+
+## Latest news
+
+**February 2023** - StatusLedManager currently in developement
+
 
 
 ## Easily set the LED blinking pattern
-You can set the pattern of your LED on the fly within your code by calling the following functions :
+You can set the pattern of your LED on the fly by calling the following methods :
 
 | Description           | Function                                                                |
 | :-------------------- | :---------------------------------------------------------------------- |
@@ -30,15 +35,42 @@ With counting pattern and only one LED on your project allows you to display mul
 |         4x         | temperature sensor failure |
 
 
-```
+```cpp
 //Blink 4 times and wait 3s before blinking again
 //Blinking pattern is 0.2s ON and 0.4s OFF
 sl.ledSetCount(4, 0.2, 0.4, 3);
 ```
 
-## Library usage with millis() and loop() (the preferred way) :
+## Library usage with loop() and millis() (the preferred way) :
 
+### New from version 1.1.0 with StatusLedManager. Less code. Drive more leds smoothly.
+
+```cpp
+#include <statusled.h>
+
+StatusLedManager slm;
+
+void setup() {
+  //It is up to you to set the correct output pin
+  pinMode(LED_BUILTIN, OUTPUT);
+
+  //Create a new led with a custom name
+  slm.createStatusLed("ready", LED_BUILTIN);
+  //Create more leds if needed...
+  
+  //Set the desired state by using the custom assigned name before
+  slm("ready").ledSetBlink(2, 50);
+}
+
+void loop() {
+  //Call the process method in your loop
+  slm.process(millis());
+}
 ```
+
+### Up to version 1.0.5 (you can still use it)
+
+```cpp
 #include <statusled.h>
 
 StatusLed sl = StatusLed();
@@ -64,6 +96,8 @@ void loop() {
 ```
 
 ## Library usage with a timer (for ex. interruption every 1ms) and loop()
+
+### Up to version 1.0.5 (you can still use it)
 
 ```
 #include <statusled.h>
@@ -95,8 +129,3 @@ void loop() {
 }
 ```
 
-## Todo list for maintainer, library enhancement
-
-- [ ] Add the possibility to set callback functions.
-- [ ] Add the possibility under Arduino Framework to automatically drive the corresponding GPIO.
-- [X] Reduce \_blinkParam, \_countParam, \_flashParam for a smaller footprint.

@@ -1,3 +1,10 @@
+## Latest news
+
+February 2023
+* Less code and simpler way to use the library with the help of the class StatusLedManager
+
+  
+
 # Easy drive a status LED on your Arduino project
 
 Every microcontroller project generally includes one or more status LED.  
@@ -6,11 +13,6 @@ This library helps you to easily display the current state of your device.
 * LED still for on/off states.
 * LED flashing for communication or storage information (TX/RX, READ/WRITE).
 * LED blinking and counting to display precise state.
-
-## Latest news
-
-**February 2023** - StatusLedManager currently in developement
-
 
 
 ## Easily set the LED blinking pattern
@@ -38,12 +40,13 @@ With counting pattern and only one LED on your project allows you to display mul
 ```cpp
 //Blink 4 times and wait 3s before blinking again
 //Blinking pattern is 0.2s ON and 0.4s OFF
-sl.ledSetCount(4, 0.2, 0.4, 3);
+ledSetCount(4, 0.2, 0.4, 3);
 ```
 
-## Library usage with loop() and millis() (the preferred way) :
+# Library usage
 
-### New from version 1.1.0 with StatusLedManager. Less code. Drive more leds smoothly.
+## with loop() and millis() (the preferred way) :
+
 
 ```cpp
 #include <statusled.h>
@@ -51,14 +54,14 @@ sl.ledSetCount(4, 0.2, 0.4, 3);
 StatusLedManager slm;
 
 void setup() {
-  //It is up to you to set the correct output pin
+  //It is up to you to set the correct output pin for your led
   pinMode(LED_BUILTIN, OUTPUT);
 
-  //Create a new led with a custom name
+  //Create a new Status Led with a custom name
   slm.createStatusLed("ready", LED_BUILTIN);
   //Create more leds if needed...
   
-  //Set the desired state by using the custom assigned name before
+  //Set the desired state by using the custom name you choose before to address the correct led
   slm("ready").ledSetBlink(2, 50);
 }
 
@@ -68,7 +71,7 @@ void loop() {
 }
 ```
 
-### Up to version 1.0.5 (you can still use it)
+## Old way, up to version 1.0.5 (you can still use it)
 
 ```cpp
 #include <statusled.h>
@@ -97,35 +100,5 @@ void loop() {
 
 ## Library usage with a timer (for ex. interruption every 1ms) and loop()
 
-### Up to version 1.0.5 (you can still use it)
-
-```
-#include <statusled.h>
-
-//1ms timer = 1000 ticks per second
-StatusLed sl = StatusLed(1000);
-
-//The initialization of your timer and the ISR routine is specific to your board.
-//Following function is only for usage demonstration
-void timerRoutine(void) {
-  sl.tick();
-}
-
-void setup() {
-  pinMode(LED_BUILTIN, OUTPUT);
-
-  //Continuously blink the LED. Blink period is 2s and duty cycle 50% (1s on, 1s off).
-  sl.ledSetBlink(2, 50);
-}
-
-void loop() {
-
-  //Calling process will return true if the state of the LED has changed.
-  if(sl.process()) {
-
-    //Update output (use !sl.state if you must invert the output)
-    digitalWrite(LED_BUILTIN, sl.state);
-  }
-}
-```
+Please see [Usage with a timer](Usage%20with%20a%20timer.md)
 

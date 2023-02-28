@@ -17,7 +17,6 @@
 
 #include <cstdint>
 #include <map>
-#include <string>
 
 class StatusLed {
 public:
@@ -32,9 +31,6 @@ public:
   void ledSetBlink(double period, double duty_cycle);
   void ledSetCount(uint8_t count, double on_time, double delay, double pause);
   void ledSetFlash(double on_time);
-
-  void setPin(uint8_t pin, bool invert = false);
-  uint8_t getState(void);
 
   uint8_t state;
 
@@ -79,8 +75,14 @@ public:
   void tick(void);
 
 private:
+  typedef struct StatusLedStruct {
+    StatusLed *sl;
+    uint8_t pin;
+    bool invert = false;
+  } StatusLedStruct;
+
   uint32_t calls_per_second_;
-  std::map<const char *, StatusLed> leds_;
+  std::map<const char *, StatusLedStruct> leds_;
 };
 
 #endif

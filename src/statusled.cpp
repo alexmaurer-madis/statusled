@@ -255,18 +255,6 @@ uint32_t StatusLed::secToTicks(double time) {
   return (uint32_t)(time * (double)calls_per_second_);
 }
 
-void StatusLed::setPin(uint8_t pin, bool invert) {
-  pin_ = pin;
-  invert_ = invert;
-}
-
-uint8_t StatusLed::getState(void) {
-  if (invert_)
-    return !state;
-  else
-    return state;
-}
-
 /**
  * @brief Construct a new StatusLedManager for use by calling process() within
  * loop() and using millis() as the time base (preferred way for Arduino)
@@ -294,15 +282,17 @@ StatusLedManager::StatusLedManager(const uint32_t calls_per_second) {
  */
 void StatusLedManager::createStatusLed(const char *name, uint8_t pin,
                                        const bool invert) {
-  StatusLed *sl;
-  if (calls_per_second_ == 0)
-    sl = new StatusLed();
-  else
-    sl = new StatusLed(calls_per_second_);
 
-  sl->pin_ = pin;
-  sl->invert_ = invert;
-  leds_.insert(std::pair<const char *, StatusLed>(name, *sl));
+  StatusLedStruct *sls = new StatusLedStruct;
+  sls->pin = pin;
+  sls->invert = invert;
+
+  if (calls_per_second_ == 0)
+    sls->sl = new StatusLed();
+  else
+    sls->sl = new StatusLed(calls_per_second_);
+
+  leds_.insert(std::pair<const char *, StatusLedStruct>(name, *sls));
 }
 
 /**
@@ -313,9 +303,10 @@ void StatusLedManager::createStatusLed(const char *name, uint8_t pin,
  */
 void StatusLedManager::process(const unsigned long millis) {
   for (auto &[key, value] : leds_) {
-    if (value.process(millis)) {
+    if (value.sl->process(millis)) {
 #ifdef Arduino_h
-      digitalWrite(value.pin_, value.getState());
+      digitalWrite(value.pin,
+                   value.invert ? !value.sl->state : value.sl->state);
 #endif
     }
   }
@@ -328,7 +319,7 @@ void StatusLedManager::process(const unsigned long millis) {
 void StatusLedManager::tick(void) {
   // tick every leds
   for (auto &[key, value] : leds_) {
-    value.tick();
+    value.sl->tick();
   }
 }
 
@@ -340,5 +331,5 @@ void StatusLedManager::tick(void) {
  */
 StatusLed &StatusLedManager::operator()(const char *name) {
   // No try catch if key name does not exist
-  return leds_.at(name);
+  return *leds_.at(name).sl;
 }

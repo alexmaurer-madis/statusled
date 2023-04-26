@@ -275,10 +275,11 @@ StatusLedManager::StatusLedManager(const uint32_t calls_per_second) {
 
 /**
  * @brief Create a new StatusLed that will be driven by the StatusLedManager.
+ * It is up to you to set the correct pin as output.
  *
  * @param name Custom name for your led (for ex. system, ready, run, error...)
  * @param pin pin number of your led
- * @param invert Optional, True to
+ * @param invert Optional, True to invert output
  */
 void StatusLedManager::createStatusLed(const char *name, uint8_t pin,
                                        const bool invert) {

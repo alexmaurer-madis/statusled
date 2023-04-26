@@ -1,6 +1,6 @@
 ## Latest news
 
-February 2023
+April 2023
 * Less code and simpler way to use the library with the help of the class StatusLedManager
 
   
@@ -12,7 +12,9 @@ This library helps you to easily display the current state of your device.
 
 * LED still for on/off states.
 * LED flashing for communication or storage information (TX/RX, READ/WRITE).
-* LED blinking and counting to display precise state.
+* LED blinking and counting to display precise states.
+
+Flashing and blinking function can also be used with a buzzer ! Beep ! Beep-Beep-Beep...
 
 
 ## Easily set the LED blinking pattern

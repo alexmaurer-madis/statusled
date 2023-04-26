@@ -302,11 +302,11 @@ void StatusLedManager::createStatusLed(const char *name, uint8_t pin,
  * @param millis the value that the function millis() returned
  */
 void StatusLedManager::process(const unsigned long millis) {
-  for (auto &[key, value] : leds_) {
-    if (value.sl->process(millis)) {
+  for (auto &kv : leds_) {
+    if (kv.second.sl->process(millis)) {
 #ifdef Arduino_h
-      digitalWrite(value.pin,
-                   value.invert ? !value.sl->state : value.sl->state);
+      digitalWrite(kv.second.pin, kv.second.invert ? !kv.second.sl->state
+                                                   : kv.second.sl->state);
 #endif
     }
   }
@@ -318,8 +318,8 @@ void StatusLedManager::process(const unsigned long millis) {
  */
 void StatusLedManager::tick(void) {
   // tick every leds
-  for (auto &[key, value] : leds_) {
-    value.sl->tick();
+  for (auto &kv : leds_) {
+    kv.second.sl->tick();
   }
 }
 

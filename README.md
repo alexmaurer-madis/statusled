@@ -14,7 +14,7 @@ This library helps you to easily display the current state of your device.
 * LED flashing for communication or storage information (TX/RX, READ/WRITE).
 * LED blinking and counting to display precise states.
 
-Flashing and blinking function can also be used with a buzzer ! Beep ! Beep-Beep-Beep...
+Flashing and counting function can also be used with a buzzer ! Beep ! Beep-Beep-Beep...
 
 
 ## Easily set the LED blinking pattern

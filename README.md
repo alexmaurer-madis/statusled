@@ -3,7 +3,12 @@
 April 2023
 * Less code and simpler way to use the library with the help of the class StatusLedManager
 
-  
+## Known issues to debug (for maintainers)
+
+### Version 1.1.0
+- With StatusLedManager, the output is not set by digitalWrite at startup or during first cycle of process method. For example, when using invert=true the output is not high.
+- Without StatusLedManager, first call of process must return true to be able to set the output accordingly.
+
 
 # Easy drive a status LED on your Arduino project
 

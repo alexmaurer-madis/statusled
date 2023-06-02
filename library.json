@@ -14,7 +14,7 @@
   },
   "homepage": "https://github.com/alexmaurer-madis/statusled",
   "export": {
-    "exclude": []
+    "exclude": ["./lib", "./test"]
   },
   "license": "MIT",
   "frameworks": "arduino",

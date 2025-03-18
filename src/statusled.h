@@ -16,12 +16,14 @@
 #include "Arduino.h"
 
 #include <cstdint>
+#include <iostream>
 #include <map>
 
 class StatusLed {
 public:
   StatusLed(void);
   StatusLed(uint32_t calls_per_second);
+  ~StatusLed();
 
   uint8_t process(void);
   uint8_t process(unsigned long millis);
@@ -32,21 +34,23 @@ public:
   void ledSetCount(uint8_t count, double on_time, double delay, double pause);
   void ledSetFlash(double on_time);
 
-  uint8_t state;
+  uint8_t state = 0;
 
-  uint8_t pin_;
-  bool invert_;
+  void setPin(uint8_t pin, bool invert);
+  uint8_t getPin(void);
+  bool getInvert(void);
 
 private:
   uint32_t secToTicks(double time);
-  uint8_t ledProcess();
+
+  uint8_t pin_;
+  bool invert_;
 
   volatile uint32_t ticks_;
   unsigned long last_millis_;
   bool function_changed_;
 
   uint32_t calls_per_second_;
-  uint8_t old_state_;
   uint8_t still_state_;
 
   uint32_t on_ticks_;
@@ -63,10 +67,16 @@ private:
   void ledFunctionFlash();
 };
 
+/**
+ * @brief Create and drive one or more status led with this manager
+ *
+ */
 class StatusLedManager {
 public:
   StatusLedManager(void);
   StatusLedManager(uint32_t calls_per_second);
+  ~StatusLedManager();
+
   void createStatusLed(const char *name, uint8_t pin, bool invert = false);
 
   StatusLed &operator()(const char *name);
@@ -75,14 +85,8 @@ public:
   void tick(void);
 
 private:
-  typedef struct StatusLedStruct {
-    StatusLed *sl;
-    uint8_t pin;
-    bool invert = false;
-  } StatusLedStruct;
-
   uint32_t calls_per_second_;
-  std::map<const char *, StatusLedStruct> leds_;
+  std::map<const char *, StatusLed *> leds_;
 };
 
 #endif

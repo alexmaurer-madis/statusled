@@ -1,9 +1,9 @@
 /**
  * @file statusled.cpp
  *
- * Library to drive a status LED like off/on, blinking, counting, flashing...
- * Every project generally includes one or more status LED.
- * This library helps you to easily display the state of your device
+ * Library to drive a status LED with a specific pattern like blinking,
+ * counting, flashing... Every project generally includes one or more status
+ * LED. This library helps you to easily display the state of your device
  *
  * @author Alexandre Maurer (alexmaurer@madis.ch)
  * @license MIT
@@ -13,20 +13,16 @@
 #include "statusled.h"
 
 /**
- * @brief Construct a new StatusLed for use by calling process() within loop()
- * and using millis() as
- * the time base (preferred way for Arduino)
+ * @brief Construct a new StatusLed. Usage by calling process() within the
+ * loop() function and using millis() as the time base (preferred way for
+ * Arduino)
  *
  */
-StatusLed::StatusLed(void) {
-  calls_per_second_ = 1000;
-  function_ptr_ = &StatusLed::ledFunctionStop;
-  function_changed_ = true;
-}
+StatusLed::StatusLed(void) { StatusLed(1000); }
 
 /**
- * @brief Construct a new StatusLed to be used with a timer calling tick() at
- * fixed interval
+ * @brief Construct a new StatusLed to be used with a timer calling the method
+ * tick() at fixed interval
  *
  * @param calls_per_second specify the number of time per second tick() will be
  * called
@@ -37,9 +33,20 @@ StatusLed::StatusLed(uint32_t calls_per_second) {
   function_changed_ = true;
 }
 
+StatusLed::~StatusLed() {}
+
+void StatusLed::setPin(uint8_t pin, bool invert = false) {
+  pin_ = pin;
+  invert_ = invert;
+}
+
+uint8_t StatusLed::getPin(void) { return pin_; }
+
+bool StatusLed::getInvert(void) { return invert_; }
+
 /**
- * @brief Function to be called within your loop() when using millis() as the
- * timebase.
+ * @brief This function must be called within your loop() when using millis() as
+ * the timebase.
  *
  * @param current_millis the current value that the function millis() returned
  * @return uint8_t return true if the state of the led must be changed
@@ -47,20 +54,35 @@ StatusLed::StatusLed(uint32_t calls_per_second) {
 uint8_t StatusLed::process(const unsigned long current_millis) {
   if (function_changed_) {
     function_changed_ = false;
+    // Set last_millis_ on function change
     last_millis_ = current_millis;
   }
 
   ticks_ += (unsigned long)(current_millis - last_millis_);
   last_millis_ = current_millis;
-  return ledProcess();
+
+  uint8_t old_state = state;
+
+  if (function_ptr_ != nullptr)
+    (this->*function_ptr_)();
+
+  return (old_state != state) ? 1 : 0;
 }
 
 /**
- * @brief Function to be called within your loop() when using timer and tick()
+ * @brief This function must be called within your loop() when using timer and
+ * tick()
  *
  * @return uint8_t
  */
-uint8_t StatusLed::process() { return ledProcess(); }
+uint8_t StatusLed::process() {
+  uint8_t old_state = state;
+
+  if (function_ptr_ != nullptr)
+    (this->*function_ptr_)();
+
+  return (old_state != state) ? 1 : 0;
+}
 
 /**
  * @brief Function to be called by a timer at fixed interval
@@ -69,7 +91,7 @@ uint8_t StatusLed::process() { return ledProcess(); }
 void StatusLed::tick(void) { ticks_++; }
 
 /**
- * @brief set led ON or OFF
+ * @brief Set led ON or OFF
  *
  * @param state true or 1 for ON, false or 0 for OFF
  */
@@ -81,7 +103,7 @@ void StatusLed::ledSetStill(const uint8_t state) {
 }
 
 /**
- * @brief set blinking mode
+ * @brief Set blinking mode
  *
  * @param period in second from 0.01 up to 10s
  * @param duty_cycle from 10 to 90%
@@ -121,8 +143,8 @@ void StatusLed::ledSetBlink(double period, double duty_cycle) {
 /**
  * @brief Set counting mode
  *
- * @param count the number of time the led will blink before a pause (from 1 to
- * 20).
+ * @param count the number of time the led will blink before a pause (from 1
+ * to 20).
  * @param on_time duration in second when the led is ON (from 0.01 to 2s).
  * @param delay delay between blinking (from 0.01 to 4s).
  * @param pause the time in second to wait before blinking the led x times
@@ -176,15 +198,14 @@ void StatusLed::ledSetCount(uint8_t count, double on_time, double delay,
 }
 
 /**
- * @brief flash the led 1 time.
+ * @brief Flash the led 1 time.
  *
- * @param on_time Duration in second the led must be ON (from 0.01 to 1s)
+ * @param on_time Duration in second the led must be ON (minimum on time
+ * enforced to 0.01s)
  */
 void StatusLed::ledSetFlash(double on_time) {
   if (on_time < 0.01)
     on_time = 0.01;
-  else if (on_time > 1)
-    on_time = 1;
 
   function_ptr_ = &StatusLed::ledFunctionStop;
   on_ticks_ = secToTicks(on_time);
@@ -195,14 +216,14 @@ void StatusLed::ledSetFlash(double on_time) {
   function_changed_ = true;
 }
 
-uint8_t StatusLed::ledProcess() {
-  old_state_ = state;
+// uint8_t StatusLed::ledProcess() {
+//   uint8_t old_state = state;
 
-  if (function_ptr_ != nullptr)
-    (this->*function_ptr_)();
+//   if (function_ptr_ != nullptr)
+//     (this->*function_ptr_)();
 
-  return (old_state_ != state) ? 1 : 0;
-}
+//   return (old_state != state) ? 1 : 0;
+// }
 
 void StatusLed::ledFunctionStop() {
   // Do nothing
@@ -240,7 +261,7 @@ void StatusLed::ledFunctionCount() {
 }
 
 /**
- * @brief Flash during the specified time and
+ * @brief Led ON during the specified time
  *
  */
 void StatusLed::ledFunctionFlash() { state = (ticks_ >= on_ticks_) ? 0 : 1; }
@@ -256,11 +277,11 @@ uint32_t StatusLed::secToTicks(double time) {
 }
 
 /**
- * @brief Construct a new StatusLedManager for use by calling process() within
- * loop() and using millis() as the time base (preferred way for Arduino)
+ * @brief Construct a new StatusLedManager. Usage by calling process() within
+ * the loop() function and millis() as the time base (preferred way for Arduino)
  *
  */
-StatusLedManager::StatusLedManager(void) { calls_per_second_ = 0; }
+StatusLedManager::StatusLedManager(void) { calls_per_second_ = 1000; }
 
 /**
  * @brief Construct a new StatusLedManager to be used with a timer calling
@@ -271,6 +292,12 @@ StatusLedManager::StatusLedManager(void) { calls_per_second_ = 0; }
  */
 StatusLedManager::StatusLedManager(const uint32_t calls_per_second) {
   calls_per_second_ = calls_per_second;
+}
+
+StatusLedManager::~StatusLedManager() {
+  for (auto &kv : leds_) {
+    delete kv.second;
+  }
 }
 
 /**
@@ -284,16 +311,12 @@ StatusLedManager::StatusLedManager(const uint32_t calls_per_second) {
 void StatusLedManager::createStatusLed(const char *name, uint8_t pin,
                                        const bool invert) {
 
-  StatusLedStruct *sls = new StatusLedStruct;
-  sls->pin = pin;
-  sls->invert = invert;
+  StatusLed *sl = new StatusLed(calls_per_second_);
+  sl->setPin(pin, invert);
 
-  if (calls_per_second_ == 0)
-    sls->sl = new StatusLed();
-  else
-    sls->sl = new StatusLed(calls_per_second_);
+  digitalWrite(pin, invert ? !sl->state : sl->state);
 
-  leds_.insert(std::pair<const char *, StatusLedStruct>(name, *sls));
+  leds_.insert(std::pair<const char *, StatusLed *>(name, sl));
 }
 
 /**
@@ -304,10 +327,11 @@ void StatusLedManager::createStatusLed(const char *name, uint8_t pin,
  */
 void StatusLedManager::process(const unsigned long millis) {
   for (auto &kv : leds_) {
-    if (kv.second.sl->process(millis)) {
+    if (kv.second->process(millis)) {
 #ifdef Arduino_h
-      digitalWrite(kv.second.pin, kv.second.invert ? !kv.second.sl->state
-                                                   : kv.second.sl->state);
+      digitalWrite(kv.second->getPin(), kv.second->getInvert()
+                                            ? !kv.second->state
+                                            : kv.second->state);
 #endif
     }
   }
@@ -320,7 +344,7 @@ void StatusLedManager::process(const unsigned long millis) {
 void StatusLedManager::tick(void) {
   // tick every leds
   for (auto &kv : leds_) {
-    kv.second.sl->tick();
+    kv.second->tick();
   }
 }
 
@@ -332,5 +356,5 @@ void StatusLedManager::tick(void) {
  */
 StatusLed &StatusLedManager::operator()(const char *name) {
   // No try catch if key name does not exist
-  return *leds_.at(name).sl;
+  return *leds_.at(name);
 }

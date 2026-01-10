@@ -12,13 +12,17 @@
 
 #include "statusled.h"
 
+#ifndef STATUSLED_USE_MAP
+#include <cstring>  // for strcmp
+#endif
+
 /**
  * @brief Construct a new StatusLed. Usage by calling process() within the
  * loop() function and using millis() as the time base (preferred way for
  * Arduino)
  *
  */
-StatusLed::StatusLed(void) { StatusLed(1000); }
+StatusLed::StatusLed(void) : StatusLed(1000) {}
 
 /**
  * @brief Construct a new StatusLed to be used with a timer calling the method
@@ -76,6 +80,10 @@ uint8_t StatusLed::process(const unsigned long current_millis) {
  * @return uint8_t
  */
 uint8_t StatusLed::process() {
+  if (function_changed_) {
+    function_changed_ = false;
+  }
+
   uint8_t old_state = state;
 
   if (function_ptr_ != nullptr)
@@ -97,7 +105,7 @@ void StatusLed::tick(void) { ticks_++; }
  */
 void StatusLed::ledSetStill(const uint8_t state) {
   function_ptr_ = nullptr;
-  still_state_ = state;
+  pattern_.still_state = state;
   function_ptr_ = &StatusLed::ledFunctionStill;
   function_changed_ = true;
 }
@@ -107,8 +115,12 @@ void StatusLed::ledSetStill(const uint8_t state) {
  *
  * @param period in second from 0.01 up to 10s
  * @param duty_cycle from 10 to 90%
+ * @param duration_ms duration in milliseconds (0 = blink indefinitely,
+ *                    >0 = blink for the specified duration then stop).
+ *                    Maximum value is 3600000 (1 hour).
  */
-void StatusLed::ledSetBlink(double period, double duty_cycle) {
+void StatusLed::ledSetBlink(double period, double duty_cycle,
+                            uint32_t duration_ms) {
   if (period < 0.01)
     period = 0.01;
   else if (period > 10)
@@ -119,14 +131,20 @@ void StatusLed::ledSetBlink(double period, double duty_cycle) {
   else if (duty_cycle > 90)
     duty_cycle = 90;
 
+  if (duration_ms > 3600000)
+    duration_ms = 3600000;
+
   uint32_t blinkPeriodTicks = secToTicks(period);
   uint32_t blinkOnTicks = (uint32_t)(blinkPeriodTicks * (duty_cycle / 100));
   uint32_t blinkOffTicks = blinkPeriodTicks - blinkOnTicks;
+  uint32_t blinkDurationTicks =
+      (uint32_t)((duration_ms * calls_per_second_) / 1000);
 
   /* If same function, compare the parameters */
   if (function_ptr_ == &StatusLed::ledFunctionBlink) {
     /* If same parameters, do nothing */
-    if ((blinkOnTicks == on_ticks_) && (blinkOffTicks == off_ticks_)) {
+    if ((blinkOnTicks == on_ticks_) && (blinkOffTicks == off_ticks_) &&
+        (blinkDurationTicks == pattern_.blink.duration_ticks)) {
       return;
     }
   }
@@ -134,6 +152,7 @@ void StatusLed::ledSetBlink(double period, double duty_cycle) {
   function_ptr_ = &StatusLed::ledFunctionStop;
   on_ticks_ = blinkOnTicks;
   off_ticks_ = blinkOffTicks;
+  pattern_.blink.duration_ticks = blinkDurationTicks;
   ticks_ = 0;
   state = 0;
   function_ptr_ = &StatusLed::ledFunctionBlink;
@@ -180,7 +199,8 @@ void StatusLed::ledSetCount(uint8_t count, double on_time, double delay,
   if (function_ptr_ == &StatusLed::ledFunctionCount) {
     /* If same parameters, do nothing */
     if ((on_ticks_ == countOnTicks) && (off_ticks_ == countOffTicks) &&
-        (pause_ticks_ == countPauseTicks) && (total_count_ == count)) {
+        (pattern_.count.pause_ticks == countPauseTicks) &&
+        (pattern_.count.total_count == count)) {
       return;
     }
   }
@@ -188,9 +208,9 @@ void StatusLed::ledSetCount(uint8_t count, double on_time, double delay,
   function_ptr_ = &StatusLed::ledFunctionStop;
   on_ticks_ = countOnTicks;
   off_ticks_ = countOffTicks;
-  pause_ticks_ = countPauseTicks;
-  total_count_ = count;
-  current_count_ = count;
+  pattern_.count.pause_ticks = countPauseTicks;
+  pattern_.count.total_count = count;
+  pattern_.count.current_count = count;
   ticks_ = 0;
   state = 0;
   function_ptr_ = &StatusLed::ledFunctionCount;
@@ -229,32 +249,44 @@ void StatusLed::ledFunctionStop() {
   // Do nothing
 }
 
-void StatusLed::ledFunctionStill() { state = still_state_; }
+void StatusLed::ledFunctionStill() { state = pattern_.still_state; }
 
 void StatusLed::ledFunctionBlink() {
-  // Reset ticks counter after period is elapsed
-  if (ticks_ >= (on_ticks_ + off_ticks_))
-    ticks_ = 0;
+  // Check if duration has elapsed (only if duration_ticks > 0)
+  if (pattern_.blink.duration_ticks > 0 &&
+      ticks_ >= pattern_.blink.duration_ticks) {
+    state = 0;
+    function_ptr_ = &StatusLed::ledFunctionStop;
+    return;
+  }
 
-  state = (ticks_ >= on_ticks_) ? 0 : 1;
+  // Calculate position within current period
+  uint32_t period_ticks = on_ticks_ + off_ticks_;
+  uint32_t position_in_period = ticks_ % period_ticks;
+
+  state = (position_in_period < on_ticks_) ? 1 : 0;
 }
 
 void StatusLed::ledFunctionCount() {
   // Pause before counting again
-  if (current_count_ == 0) {
-    if (ticks_ >= pause_ticks_) {
+  if (pattern_.count.current_count == 0) {
+    state = 0;  // Always OFF during pause
+    if (ticks_ >= pattern_.count.pause_ticks) {
       // Reset ticks and reload counter
       ticks_ = 0;
-      current_count_ = total_count_;
-    } else
-      return;
+      pattern_.count.current_count = pattern_.count.total_count;
+    }
+    return;
   }
 
   // Reset ticks counter after period is elapsed
   if (ticks_ >= (on_ticks_ + off_ticks_)) {
     ticks_ = 0;
-    current_count_--;
-    return;
+    pattern_.count.current_count--;
+    if (pattern_.count.current_count == 0) {
+      state = 0;  // Enter pause
+      return;
+    }
   }
 
   state = (ticks_ < on_ticks_) ? 1 : 0;
@@ -281,7 +313,12 @@ uint32_t StatusLed::secToTicks(double time) {
  * the loop() function and millis() as the time base (preferred way for Arduino)
  *
  */
-StatusLedManager::StatusLedManager(void) { calls_per_second_ = 1000; }
+StatusLedManager::StatusLedManager(void) {
+  calls_per_second_ = 1000;
+#ifndef STATUSLED_USE_MAP
+  led_count_ = 0;
+#endif
+}
 
 /**
  * @brief Construct a new StatusLedManager to be used with a timer calling
@@ -292,12 +329,21 @@ StatusLedManager::StatusLedManager(void) { calls_per_second_ = 1000; }
  */
 StatusLedManager::StatusLedManager(const uint32_t calls_per_second) {
   calls_per_second_ = calls_per_second;
+#ifndef STATUSLED_USE_MAP
+  led_count_ = 0;
+#endif
 }
 
 StatusLedManager::~StatusLedManager() {
+#ifdef STATUSLED_USE_MAP
   for (auto &kv : leds_) {
     delete kv.second;
   }
+#else
+  for (uint8_t i = 0; i < led_count_; i++) {
+    delete leds_[i].led;
+  }
+#endif
 }
 
 /**
@@ -316,7 +362,15 @@ void StatusLedManager::createStatusLed(const char *name, uint8_t pin,
 
   digitalWrite(pin, invert ? !sl->state : sl->state);
 
+#ifdef STATUSLED_USE_MAP
   leds_.insert(std::pair<const char *, StatusLed *>(name, sl));
+#else
+  if (led_count_ < STATUSLED_MAX_LEDS) {
+    leds_[led_count_].name = name;
+    leds_[led_count_].led = sl;
+    led_count_++;
+  }
+#endif
 }
 
 /**
@@ -326,6 +380,7 @@ void StatusLedManager::createStatusLed(const char *name, uint8_t pin,
  * @param millis the value that the function millis() returned
  */
 void StatusLedManager::process(const unsigned long millis) {
+#ifdef STATUSLED_USE_MAP
   for (auto &kv : leds_) {
     if (kv.second->process(millis)) {
 #ifdef Arduino_h
@@ -335,6 +390,17 @@ void StatusLedManager::process(const unsigned long millis) {
 #endif
     }
   }
+#else
+  for (uint8_t i = 0; i < led_count_; i++) {
+    if (leds_[i].led->process(millis)) {
+#ifdef Arduino_h
+      digitalWrite(leds_[i].led->getPin(), leds_[i].led->getInvert()
+                                               ? !leds_[i].led->state
+                                               : leds_[i].led->state);
+#endif
+    }
+  }
+#endif
 }
 
 /**
@@ -342,10 +408,15 @@ void StatusLedManager::process(const unsigned long millis) {
  *
  */
 void StatusLedManager::tick(void) {
-  // tick every leds
+#ifdef STATUSLED_USE_MAP
   for (auto &kv : leds_) {
     kv.second->tick();
   }
+#else
+  for (uint8_t i = 0; i < led_count_; i++) {
+    leds_[i].led->tick();
+  }
+#endif
 }
 
 /**
@@ -355,6 +426,15 @@ void StatusLedManager::tick(void) {
  * @return StatusLed&
  */
 StatusLed &StatusLedManager::operator()(const char *name) {
-  // No try catch if key name does not exist
+#ifdef STATUSLED_USE_MAP
   return *leds_.at(name);
+#else
+  for (uint8_t i = 0; i < led_count_; i++) {
+    if (strcmp(leds_[i].name, name) == 0) {
+      return *leds_[i].led;
+    }
+  }
+  // Return first LED if not found (should not happen in normal use)
+  return *leds_[0].led;
+#endif
 }

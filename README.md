@@ -1,6 +1,16 @@
 ## Latest news
 
-December 2024
+### January 2026 - v1.2.0
+
+* Added optional duration parameter to `ledSetBlink()` to automatically stop blinking after a specified time
+
+* This revision significantly reduces RAM and ROM footprint, making the library more suitable for memory-constrained microcontrollers.
+
+* Optional std::map: The StatusLedManager no longer requires std::map by default. Instead, it uses a fixed-size array for LED storage, reducing compiled size by approximately 90%.
+
+* Tested with c++11 and c++17
+
+### December 2024 - v1.1.1
 * Code rework on class StatusLedManager
 
 # Easy drive a status LED on your Arduino project
@@ -21,9 +31,11 @@ You can set the pattern of your LED on the fly by calling the following methods 
 | Description           | Function                                                                |
 | :-------------------- | :---------------------------------------------------------------------- |
 | LED still (off or on) | `ledSetStill(uint8_t)`                                                  |
-| LED blinking          | `ledSetBlink(double period, double dutyCycle)`                          |
+| LED blinking          | `ledSetBlink(double period, double dutyCycle, uint32_t duration_ms=0)`  |
 | LED counting          | `ledSetCount(uint8_t count, double onTime, double delay, double sleep)` |
 | LED flashing one time | `ledSetFlash(double onTime)`                                            |
+
+The `duration_ms` parameter is optional. Set to `0` (default) for indefinite blinking, or specify a duration in milliseconds to automatically stop after that time (max 3600000 = 1 hour).
 
 
 ## Example with the LED pattern "Counting"
@@ -41,6 +53,16 @@ With counting pattern and only one LED on your project allows you to display mul
 //Blink 4 times and wait 3s before blinking again
 //Blinking pattern is 0.2s ON and 0.4s OFF
 ledSetCount(4, 0.2, 0.4, 3);
+```
+
+## Example with the LED pattern "Blinking" with duration
+
+```cpp
+//Blink indefinitely with period 0.5s and 50% duty cycle
+ledSetBlink(0.5, 50);
+
+//Blink for 20 seconds then stop automatically
+ledSetBlink(0.5, 50, 20000);
 ```
 
 # Library usage
@@ -70,6 +92,24 @@ void loop() {
   slm.process(millis());
 }
 ```
+
+# Configuration option
+
+Define these macros before including the header:
+
+```cpp
+// Use a fixed-size array (default: 4 LEDs max)
+#define STATUSLED_MAX_LEDS 2    // Adjust to your needs
+#include "statusled.h"
+```
+
+```cpp
+// Or use std::map for unlimited LEDs (larger footprint)
+#define STATUSLED_USE_MAP
+#include "statusled.h"
+```
+
+Note: When using array mode, createStatusLed() silently ignores requests beyond STATUSLED_MAX_LEDS. Ensure this value matches your project requirements.
 
 ## Old way, up to version 1.0.5 (you can still use it)
 
